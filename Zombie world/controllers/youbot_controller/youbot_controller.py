@@ -145,6 +145,8 @@ def main():
             # i = 0
         
         #i+=1
+
+        print(lidar)
         
         #make decisions using inputs if you choose to do so
          
