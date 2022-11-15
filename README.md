@@ -2,4 +2,4 @@
 
 Miriam Huerta \
 Brihu Sundararaman \
-Zach Taylor \
+Zach Taylor
