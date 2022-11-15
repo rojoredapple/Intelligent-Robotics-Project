@@ -68,8 +68,8 @@ def main():
     # camera8 = robot.getDevice("BackHighRes")
     # camera8.enable(timestep)
     
-    gyro = robot.getDevice("gyro")
-    gyro.enable(timestep)
+    # gyro = robot.getDevice("gyro")
+    # gyro.enable(timestep)
     
     # lightSensor = robot.getDevice("light sensor")
     # lightSensor.enable(timestep)
