@@ -4,10 +4,12 @@ from controller import Robot, Motor, Camera, Accelerometer, GPS, Gyro, LightSens
 from controller import Supervisor
 
 from youbot_zombie import *
-   
+
 #------------------CHANGE CODE BELOW HERE ONLY--------------------------
 #define functions here for making decisions and using sensor inputs
-    
+
+import numpy as np
+import sys
     
 
 
@@ -82,6 +84,10 @@ def main():
     
     lidar = robot.getDevice("lidar")
     lidar.enable(timestep)
+    lidar.enablePointCloud()
+    # ideal_freq = float(7.8125)
+    # lidar.setFrequency(ideal_freq)
+
     
     fr = robot.getDevice("wheel1")
     fl = robot.getDevice("wheel2")
@@ -129,8 +135,53 @@ def main():
         timer += 1
         
      #------------------CHANGE CODE BELOW HERE ONLY--------------------------   
-         #called every timestep
-        
+        #called every timestep
+
+        # Front wall: 2m
+        # Right wall: 4m
+        # back wall: 6m
+        # left wall: 8m
+
+        # lidarPoints = lidar.getPointCloud(data_type='buffer')
+        lidarPoints = lidar.getRangeImage()
+        print("\nzach2\n")
+        print("Lidar sampling pd: " + str(lidar.getSamplingPeriod()) + "\n")
+        print("Lidar min freq: " + str(lidar.getMinFrequency()) + "\n")
+        print("Lidar freq: " + str(lidar.getFrequency()) + "\n")
+        print("Lidar max freq: " + str(lidar.getMaxFrequency()) + "\n")
+        print("Lidar num of points: " + str(lidar.getNumberOfPoints()) + "\n")
+        print("Lidar fov: " + str(lidar.getFov()) + "\n")
+        print("Lidar vertical fov: " + str(lidar.getVerticalFov()) + "\n")
+        print("Lidar Min range: " + str(lidar.getMinRange()) + "\n")
+        print("Lidar max range: " + str(lidar.getMaxRange()) + "\n")
+        print("zach: num of layers: " + str(lidar.getNumberOfLayers()) + "\n")
+        print("zach: H resolutoin: " + str(lidar.getHorizontalResolution()) + "\n")
+        print(type(lidarPoints))
+        print(type(lidarPoints[0]))
+
+        for index, val in enumerate(lidarPoints):
+            # val = WbLidarPoint(val,size)
+            # print("\n")
+            # print(index)
+            # print("val:\n")
+            # print(dir(val))
+            # print(val)
+            # print("val acquire:\n")
+            # print(dir(val.acquire()))
+            # print(val.acquire())
+            # print("val next:\n")
+            # print(dir(val.next()))
+            # print(val.next())
+            # print("val own:\n")
+            # print(dir(val.own()))
+            # print(val.own())
+            # print("val x:\n")
+            # print(val.x)
+
+            # if (index == 0): break
+
+            # print("x: " + str(lidarPoints[i].x) + " y: " + str(lidarPoints[i].y) + " z: " + str(lidarPoints[i].z) + " layer: " + str(lidarPoints[i].layer_id) + " time: " + str(lidarPoints[i].time) + "\n") # For getPointCloud
+            print("i: " + str(index) + " val: " + str(val) + "\n") # for getRangeImage()
         
         #possible pseudocode for moving forward, then doing a 90 degree left turn
         #if i <100
@@ -146,7 +197,7 @@ def main():
         
         #i+=1
 
-        print(lidar)
+        # print(lidar)
         
         #make decisions using inputs if you choose to do so
          

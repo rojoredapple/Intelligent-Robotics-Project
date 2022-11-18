@@ -4,8 +4,8 @@ WorldInfo {
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation 0.2654037923675373 -0.9423217821354626 -0.203937455877961 4.945453382972304
-  position 8.466828815371763 4.362028417939677 2.720195783245122
+  orientation 0.5680956357125869 0.6042639770360964 0.5586881014849271 4.226589829241405
+  position -2.834091938558636 30.34597266282091 1.1780980377001078
 }
 TexturedBackground {
 }
@@ -121,7 +121,7 @@ DEF Youbot Youbot {
   ]
 }
 DEF Wall Solid {
-  translation 5.01 0.7 -5.02
+  translation 0 0.7 4
   rotation 0.3066079193795392 -0.011854155239539529 -0.9517620830739724 -6.674201642052153e-16
   children [
     Shape {
@@ -142,7 +142,7 @@ DEF Wall Solid {
   }
 }
 DEF Wall Solid {
-  translation -1 0.7 7.41
+  translation 0 0.7 -8
   rotation 0.3066079193795392 -0.011854155239539529 -0.9517620830739724 -6.674201642052153e-16
   children [
     Shape {
@@ -151,14 +151,56 @@ DEF Wall Solid {
         metalness 0
       }
       geometry Box {
-        size 0.3 2.5 10
+        size 15 2.5 0.3
+      }
+    }
+  ]
+  name "solid(50)"
+  boundingObject Shape {
+    geometry Box {
+      size 15 2.5 0.3
+    }
+  }
+}
+DEF Wall Solid {
+  translation -6 0.7 -1
+  rotation 0.3066079193795392 -0.011854155239539529 -0.9517620830739724 -6.674201642052153e-16
+  children [
+    Shape {
+      appearance PBRAppearance {
+        roughness 1
+        metalness 0
+      }
+      geometry Box {
+        size 0.3 2.5 15
       }
     }
   ]
   name "solid(21)"
   boundingObject Shape {
     geometry Box {
-      size 0.3 2.5 10
+      size 0.3 2.5 15
+    }
+  }
+}
+DEF Wall Solid {
+  translation 2 0.7 -1
+  rotation 0.3066079193795392 -0.011854155239539529 -0.9517620830739724 -6.674201642052153e-16
+  children [
+    Shape {
+      appearance PBRAppearance {
+        roughness 1
+        metalness 0
+      }
+      geometry Box {
+        size 0.3 2.5 15
+      }
+    }
+  ]
+  name "solid(49)"
+  boundingObject Shape {
+    geometry Box {
+      size 0.3 2.5 15
     }
   }
 }
@@ -602,28 +644,6 @@ DEF Berry19 Solid {
   physics Physics {
   }
 }
-DEF Berry20 Solid {
-  translation -2.1299 0.0589828 -1.3501
-  rotation -0.4472135954998153 2.4166820336214355e-12 -0.8944271909999872 0.0010477170011384145
-  children [
-    Shape {
-      appearance PBRAppearance {
-        baseColor 1 0.9 0
-        roughness 1
-        metalness 0
-      }
-      geometry Box {
-        size 0.1 0.1 0.1
-      }
-    }
-  ]
-  name "solid(24)"
-  boundingObject DEF BOX Box {
-    size 0.1 0.1 0.1
-  }
-  physics Physics {
-  }
-}
 DEF Berry21 Solid {
   translation 4.3501 0.0553278 3.8099
   rotation -0.4472135954998153 2.4166820336214355e-12 -0.8944271909999872 0.0010477170011384145
@@ -662,28 +682,6 @@ DEF Berry22 Solid {
     }
   ]
   name "solid(31)"
-  boundingObject DEF BOX Box {
-    size 0.1 0.1 0.1
-  }
-  physics Physics {
-  }
-}
-DEF Berry23 Solid {
-  translation 2.36029 0.243444 -4.19017
-  rotation -0.4472135954998153 2.4166820336214355e-12 -0.8944271909999872 0.0010477170011384145
-  children [
-    Shape {
-      appearance PBRAppearance {
-        baseColor 0.9 0.5 0.3
-        roughness 1
-        metalness 0
-      }
-      geometry Box {
-        size 0.1 0.1 0.1
-      }
-    }
-  ]
-  name "solid(32)"
   boundingObject DEF BOX Box {
     size 0.1 0.1 0.1
   }
@@ -1109,29 +1107,6 @@ DEF BOX3 Solid {
   physics Physics {
   }
 }
-DEF BOX4 Solid {
-  translation 2.379909279885896 0.04820250043479219 -4.169637119543586
-  rotation -0.9701425001453009 -8.848015029613203e-14 -0.2425356250364573 -0.00374049966262251
-  scale 2 2 2
-  children [
-    Shape {
-      appearance PBRAppearance {
-        baseColor 0 0 0
-        roughness 1
-        metalness 0
-      }
-      geometry Box {
-        size 0.2 0.1 0.2
-      }
-    }
-  ]
-  name "solid(28)"
-  boundingObject DEF BOX Box {
-    size 0.2 0.1 0.2
-  }
-  physics Physics {
-  }
-}
 DEF BOX5 Solid {
   translation -10.728464549611523 0.04820111454793706 1.0806349695520423
   rotation -0.9837389002476776 0.002222309447905241 -0.17959074998509106 -0.006458284888604011
@@ -1331,39 +1306,6 @@ DEF zombie4 Pedestrian {
   pantsColor 0.6 0.2 1
   shoesColor 0.6 0.2 1
   skinColor 0.6 0.2 1
-  bodySlot [
-    Emitter {
-      range 4
-      channel -1
-    }
-  ]
-  rightLegAngle 0.23563636363636417
-  rightLowerLegAngle 0.13490909090909156
-  rightFootAngle 0.40472727272727466
-  leftLegAngle -1.1294545454545468
-  leftLowerLegAngle 1.705272727272728
-  leftFootAngle -0.06490909090909155
-  rightArmAngle -0.34072727272727515
-  rightLowerArmAngle -0.5698181818181831
-  rightHandAngle -0.24709090909090947
-  leftArmAngle 0.5534545454545489
-  leftLowerArmAngle -0.6803636363636388
-  leftHandAngle 0.11563636363636419
-  headAngle 0.003272727272726854
-}
-DEF zombie5 Pedestrian {
-  translation -6.2201 1.27 1.3631
-  rotation 0 1 0 2.542269011900159
-  name "pedestrian(4)"
-  controller "acqua_zombie"
-  controllerArgs [
-    "--trajectory=\"\""
-    " --speed=1.5"
-  ]
-  shirtColor 0 0.9 0.7
-  pantsColor 0 0.9 0.7
-  shoesColor 0 0.9 0.7
-  skinColor 0 0.9 0.7
   bodySlot [
     Emitter {
       range 4
