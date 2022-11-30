@@ -2,6 +2,11 @@
 
 from controller import Robot, Motor, Camera, Accelerometer, GPS, Gyro, LightSensor, Receiver, RangeFinder, Lidar
 from controller import Supervisor
+import numpy as np
+import cv2
+
+
+
 
 from youbot_zombie import *
    
@@ -146,7 +151,16 @@ def main():
         
         #i+=1
 
-        print(lidar)
+        # using webots camera object take image every timestep and interpret with opencv and don't get errors
+        image = camera5.getImageArray()
+        # convert image to numpy array
+        img_float32 = np.float32(image)
+        image = cv2.cvtColor(img_float32, cv2.COLOR_RGB2HSV)
+        print(timer)
+        cv2.imwrite(f"sample-{timer}.png",image)
+        cv2.waitKey(1)
+
+
         
         #make decisions using inputs if you choose to do so
          
