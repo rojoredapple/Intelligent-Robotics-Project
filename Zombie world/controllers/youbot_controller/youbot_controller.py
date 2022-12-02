@@ -4,6 +4,7 @@ from controller import Robot, Motor, Camera, Accelerometer, GPS, Gyro, LightSens
 from controller import Supervisor
 import numpy as np
 import cv2
+import math
 
 
 
@@ -93,10 +94,10 @@ def main():
     br = robot.getDevice("wheel3")
     bl = robot.getDevice("wheel4")
     
-    fr.setPosition(float('inf'))
-    fl.setPosition(float('inf'))
-    br.setPosition(float('inf'))
-    bl.setPosition(float('inf'))
+    # fr.setPosition(float('inf'))
+    # fl.setPosition(float('inf'))
+    # br.setPosition(float('inf'))
+    # bl.setPosition(float('inf'))
     
     
     i=0
@@ -132,6 +133,8 @@ def main():
             
             
         timer += 1
+
+
         
      #------------------CHANGE CODE BELOW HERE ONLY--------------------------   
          #called every timestep
@@ -149,16 +152,153 @@ def main():
         #if i==300
             # i = 0
         
-        #i+=1
+        i += 1
+
+        
+        # different thresholding methods to try
+        # cv2.ADAPTIVE_THRESH_MEAN_C
+        # cv2.ADAPTIVE_THRESH_GAUSSIAN_C
+        # cv2.THRESH_BINARY
+        # cv2.THRESH_BINARY+cv.THRESH_OTSU
+
 
         # using webots camera object take image every timestep and interpret with opencv and don't get errors
         image = camera5.getImageArray()
         # convert image to numpy array
         img_float32 = np.float32(image)
+        # rotate image 90 degrees right and flip on y axis
+        img_float32 = cv2.rotate(img_float32, cv2.ROTATE_90_CLOCKWISE)
+        img_float32 = cv2.flip(img_float32, 1)
         image = cv2.cvtColor(img_float32, cv2.COLOR_RGB2HSV)
-        print(timer)
-        cv2.imwrite(f"sample-{timer}.png",image)
+        cv2.imwrite(f"original-sample-{i}.png",image)
+
+        # gaussain blur to remove noise
+        # image = cv2.GaussianBlur(image, (5, 5), 0)
+
+        # zombies are vertical creatures that have a humanoid shape, identify them by their shape
+        # use opencv to find contours of the zombies
+        img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        
+
+        img = img.astype(np.uint8)
+        # remove darkest pixels from image
+        img[img < 55] = 66
+   
+        
+
+        # ret,thresh = cv2.threshold(img,60,255,cv2.THRESH_BINARY)
+        # thresh1 = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY,11,2)
+
+        thresh = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
+        # thresh0 = cv2.Canny(img,50,100)
+        contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        cv2.imwrite(f"thresh-{i}.png",thresh)
+        print('countors',len(contours))
+        
+        # # filter countours by size
+        # contours = [c for c in contours if cv2.contourArea(c) > 25]
+        print('filtered countors',len(contours))
+        # remove largest contour
+        # get avergae pixel value of each contour
+
+        # merge countours that are close together
+
+        # draw contours on image as white lines
+        # cv2.drawContours(image, contours, -1, (255,255,255), 1)
+        # cv2.drawContours(img, contours, -1, (255,255,255), 1)
+        # find the bounding box of each contour
+        bounding_boxes = [cv2.boundingRect(c) for c in contours]
+        # remove bounding box with (0, 0, 128, 64) dimensions
+        bounding_boxes = [b for b in bounding_boxes if b != (0, 0, 128, 64)]
+        for box in bounding_boxes:
+            print('before merge', box)
+
+        # merge bounding boxes that overlap
+        unused_boxes = bounding_boxes.copy()
+        used_boxes = []
+
+        def merge_boxes(boxes):
+            merged_boxes = []
+            for idx, box in enumerate(boxes):
+                x, y, w, h = box
+                for box2 in boxes:
+                    x2, y2, w2, h2 = box2
+                    if box != box2 and box2 not in used_boxes:
+                        if x2 < x + w and x2 + w2 > x and y2 < y + h and y2 + h2 > y:
+                            x = min(x, x2)
+                            y = min(y, y2)
+                            w = max(x + w, x2 + w2) - x
+                            h = max(y + h, y2 + h2) - y
+                            print('merged box', (x, y, w, h), 'from', box, box2)
+                            merged_boxes.append((x, y, w, h))
+                            used_boxes.append(box)
+                            if (box in unused_boxes):
+                                unused_boxes.remove(box)
+                            if (box2 in unused_boxes):
+                                unused_boxes.remove(box2)
+            for box in unused_boxes:
+                merged_boxes.append(box)
+            return merged_boxes
+        
+        
+        bounding_boxes = merge_boxes(bounding_boxes)
+        # if a box is inside another box, remove it
+        def remove_box_inside(boxes):
+            for idx, box in enumerate(boxes):
+                x, y, w, h = box
+                for box2 in boxes:
+                    x2, y2, w2, h2 = box2
+                    if box != box2:
+                        if x2 < x + w and x2 + w2 > x and y2 < y + h and y2 + h2 > y:
+                            boxes.remove(box2)
+            return boxes
+        bounding_boxes = remove_box_inside(bounding_boxes)
+        bounding_boxes = remove_box_inside(bounding_boxes)
+
+        # remove bounding boxes that are too small
+        bounding_boxes = [b for b in bounding_boxes if b[2] > 10 and b[3] > 10]
+        for box in bounding_boxes:
+            print('after merge', box)
+
+
+
+
+        # draw bounding boxes on image in black
+        for box in bounding_boxes:
+            cv2.rectangle(image, box, (0,0,0), 1)
+            cv2.rectangle(img, box, (0,0,0), 1)
+        # find the center of each bounding box
+
+        # get the the center pixel value of each bounding box
+        for box in bounding_boxes:
+            # get the center of the bounding box
+            center = (box[0] + box[2]//2, box[1] + box[3]//2)
+            # get mean of pixel value around the center of the bounding box
+            mean = np.mean(image[center[1]-5:center[1]+5, center[0]-5:center[0]+5])
+            print('pixel value', i ,mean)
+            # if the pixel value is not black, draw a circle at the center of the bounding box
+            if mean != 0:
+                cv2.circle(image, center, 1, (0,0,0), 1)
+                cv2.circle(img, center, 1, (0,0,0), 1)
+
+
+
+
+
+
+        
+        # # draw centers on image in black
+        # for center in centers:
+        #     cv2.circle(image, center, 1, (0,0,0), 2)
+        #     cv2.circle(img, center, 1, (0,0,0), 2)
+
+
+
+        print(i)
+        cv2.imwrite(f"sample-{i}.png",image)
         cv2.waitKey(1)
+        if (i == 15):
+            break
 
 
         
