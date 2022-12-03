@@ -170,7 +170,63 @@ def main():
         img_float32 = cv2.rotate(img_float32, cv2.ROTATE_90_CLOCKWISE)
         img_float32 = cv2.flip(img_float32, 1)
         image = cv2.cvtColor(img_float32, cv2.COLOR_RGB2HSV)
+        original_image = image.copy()
         cv2.imwrite(f"original-sample-{i}.png",image)
+
+
+
+
+
+        # iterate through every pixel
+        for row in range(image.shape[0]):
+            for col in range(image.shape[1]):
+                # if pixel is in range of red color
+                if image[row][col][2] >= 200 and image[row][col][2] <= 225:
+                    image[row][col] = [255,255,255]
+
+        
+
+        # if pixel
+
+        # find and remove the most common colour in the image
+        
+
+        # change pixels between rgb(205,0,15) and rgb(222,0,23) to white
+        # lower_red = np.array([0, 0, 220])
+        # upper_red = np.array([255, 255, 240])
+        # mask = cv2.inRange(image, lower_red, upper_red)
+        # image[mask > 0] = (255, 255, 255)
+
+        # change pixels between rgb(108,1,39) and rgb(108,1,38) to white
+        lower_red = np.array([0, 0, 0])
+        upper_red = np.array([255, 255, 160])
+        mask = cv2.inRange(image, lower_red, upper_red)
+        image[mask > 0] = (255,255,255)
+
+
+
+        
+        
+
+        
+        image[0] = (255,255,255)
+        image[-1] = (255,255,255)
+
+
+        image[:,0] = (255,255,255)
+        image[:,-1] = (255,255,255)
+       
+        
+
+
+
+        
+
+
+
+
+        
+
 
         # gaussain blur to remove noise
         # image = cv2.GaussianBlur(image, (5, 5), 0)
@@ -178,34 +234,42 @@ def main():
         # zombies are vertical creatures that have a humanoid shape, identify them by their shape
         # use opencv to find contours of the zombies
         img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
         
 
         img = img.astype(np.uint8)
+
         # remove darkest pixels from image
-        img[img < 55] = 66
-   
+        # img[img < 64] = 0
+        # img[img < 45] = 0
+        
+        # detect most common color in image and remove it
+
+        
         
 
-        # ret,thresh = cv2.threshold(img,60,255,cv2.THRESH_BINARY)
+   
+        
+        cv2.imwrite(f"bw-{i}.png",img)
+        # ret,thresh = cv2.threshold(img,127,0,cv2.THRESH_BINARY)
         # thresh1 = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY,11,2)
 
         thresh = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
         # thresh0 = cv2.Canny(img,50,100)
         contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        cv2.imwrite(f"thresh-{i}.png",thresh)
+        
         print('countors',len(contours))
         
-        # # filter countours by size
-        # contours = [c for c in contours if cv2.contourArea(c) > 25]
-        print('filtered countors',len(contours))
         # remove largest contour
         # get avergae pixel value of each contour
 
         # merge countours that are close together
 
-        # draw contours on image as white lines
-        # cv2.drawContours(image, contours, -1, (255,255,255), 1)
+        # draw contours on image as blue lines
+
+        # cv2.drawContours(original_image, contours, -1, (255,0,0), 1)
         # cv2.drawContours(img, contours, -1, (255,255,255), 1)
+        cv2.imwrite(f"thresh-{i}.png",thresh)
         # find the bounding box of each contour
         bounding_boxes = [cv2.boundingRect(c) for c in contours]
         # remove bounding box with (0, 0, 128, 64) dimensions
@@ -241,7 +305,7 @@ def main():
             return merged_boxes
         
         
-        bounding_boxes = merge_boxes(bounding_boxes)
+        # bounding_boxes = merge_boxes(bounding_boxes)
         # if a box is inside another box, remove it
         def remove_box_inside(boxes):
             for idx, box in enumerate(boxes):
@@ -252,8 +316,8 @@ def main():
                         if x2 < x + w and x2 + w2 > x and y2 < y + h and y2 + h2 > y:
                             boxes.remove(box2)
             return boxes
-        bounding_boxes = remove_box_inside(bounding_boxes)
-        bounding_boxes = remove_box_inside(bounding_boxes)
+        # bounding_boxes = remove_box_inside(bounding_boxes)
+        # bounding_boxes = remove_box_inside(bounding_boxes)
 
         # remove bounding boxes that are too small
         bounding_boxes = [b for b in bounding_boxes if b[2] > 10 and b[3] > 10]
@@ -265,7 +329,7 @@ def main():
 
         # draw bounding boxes on image in black
         for box in bounding_boxes:
-            cv2.rectangle(image, box, (0,0,0), 1)
+            cv2.rectangle(original_image, box, (0,0,0), 1)
             cv2.rectangle(img, box, (0,0,0), 1)
         # find the center of each bounding box
 
@@ -278,7 +342,7 @@ def main():
             print('pixel value', i ,mean)
             # if the pixel value is not black, draw a circle at the center of the bounding box
             if mean != 0:
-                cv2.circle(image, center, 1, (0,0,0), 1)
+                cv2.circle(original_image, center, 1, (0,0,0), 1)
                 cv2.circle(img, center, 1, (0,0,0), 1)
 
 
@@ -295,7 +359,7 @@ def main():
 
 
         print(i)
-        cv2.imwrite(f"sample-{i}.png",image)
+        cv2.imwrite(f"sample-{i}.png",original_image)
         cv2.waitKey(1)
         if (i == 15):
             break
