@@ -4,8 +4,8 @@ WorldInfo {
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation 0.20962461842741667 -0.9608369933745983 -0.18124511445007876 4.851971138593628
-  position 29.953335641431263 12.86418076503242 4.556952846408116
+  orientation 0.17800383885682744 -0.9727432022921395 -0.1486112234882219 4.906654163759506
+  position 20.376717053459746 7.596147249873116 3.4088890814994652
 }
 TexturedBackground {
 }
@@ -22,11 +22,12 @@ TexturedBackgroundLight {
   castShadows FALSE
 }
 RectangleArena {
+  translation 0.02 0 0
   floorSize 25 25
   floorTileSize 50 50
 }
 DEF Youbot Youbot {
-  translation 0 0.085297 0
+  translation 0.799972 0.0803001 0.00278848
   rotation 0.999987208574567 -0.0013813423517076782 0.004865653147609176 -1.5710938681740114
   controller "youbot_controller"
   supervisor TRUE
@@ -1179,8 +1180,8 @@ DEF BOX6 Solid {
   }
 }
 DEF zombie1 Pedestrian {
-  translation -1.81284 1.27 -0.579724
-  rotation 0 1 0 1.5933999999999997
+  translation -2.75158 1.27 -0.958604
+  rotation 0 0.9999999999999999 0 1.5933999999999995
   name "pedestrian1"
   controller "blue_zombie"
   controllerArgs [
@@ -1249,7 +1250,7 @@ DEF zombie2 Pedestrian {
   headAngle 0.003272727272726854
 }
 DEF zombie7 Pedestrian {
-  translation -3.74944 1.27 -0.183947
+  translation -2.88539 1.27 -0.28556
   rotation 0 -1 0 -1.6878553071795865
   name "pedestrian(3)"
   controller "green_zombie"
@@ -1319,8 +1320,8 @@ DEF zombie3 Pedestrian {
   headAngle 0.003272727272726854
 }
 DEF zombie4 Pedestrian {
-  translation -6.35183 1.27 0.126239
-  rotation 0 1 0 -2.4126957399490436
+  translation -3.39653 1.27 0.293382
+  rotation 0 1 0 1.5143
   name "pedestrian(5)"
   controller "purple_zombie"
   controllerArgs [
@@ -1352,8 +1353,8 @@ DEF zombie4 Pedestrian {
   headAngle 0.003272727272726854
 }
 DEF zombie5 Pedestrian {
-  translation -6.2571 1.27 1.16655
-  rotation 7.95298e-09 -1 -9.58979e-09 -1.756865307179586
+  translation -2.24537 1.27 0.990752
+  rotation 7.51047e-09 -1 -1.19405e-08 -1.495065307179586
   name "pedestrian(4)"
   controller "acqua_zombie"
   controllerArgs [

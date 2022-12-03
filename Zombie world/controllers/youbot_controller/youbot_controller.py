@@ -5,6 +5,7 @@ from controller import Supervisor
 import numpy as np
 import cv2
 import math
+import pprint
 
 
 
@@ -170,8 +171,7 @@ def main():
         img_float32 = cv2.rotate(img_float32, cv2.ROTATE_90_CLOCKWISE)
         img_float32 = cv2.flip(img_float32, 1)
         image = cv2.cvtColor(img_float32, cv2.COLOR_RGB2HSV)
-        original_image = image.copy()
-        cv2.imwrite(f"original-sample-{i}.png",image)
+        original_image = cv2.cvtColor(img_float32, cv2.COLOR_RGB2HSV)
 
 
 
@@ -250,7 +250,7 @@ def main():
 
    
         
-        cv2.imwrite(f"bw-{i}.png",img)
+        # cv2.imwrite(f"bw-{i}.png",img)
         # ret,thresh = cv2.threshold(img,127,0,cv2.THRESH_BINARY)
         # thresh1 = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY,11,2)
 
@@ -258,7 +258,7 @@ def main():
         # thresh0 = cv2.Canny(img,50,100)
         contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         
-        print('countors',len(contours))
+        # print('countors',len(contours))
         
         # remove largest contour
         # get avergae pixel value of each contour
@@ -269,13 +269,11 @@ def main():
 
         # cv2.drawContours(original_image, contours, -1, (255,0,0), 1)
         # cv2.drawContours(img, contours, -1, (255,255,255), 1)
-        cv2.imwrite(f"thresh-{i}.png",thresh)
+        # cv2.imwrite(f"thresh-{i}.png",thresh)
         # find the bounding box of each contour
         bounding_boxes = [cv2.boundingRect(c) for c in contours]
         # remove bounding box with (0, 0, 128, 64) dimensions
         bounding_boxes = [b for b in bounding_boxes if b != (0, 0, 128, 64)]
-        for box in bounding_boxes:
-            print('before merge', box)
 
         # merge bounding boxes that overlap
         unused_boxes = bounding_boxes.copy()
@@ -293,7 +291,7 @@ def main():
                             y = min(y, y2)
                             w = max(x + w, x2 + w2) - x
                             h = max(y + h, y2 + h2) - y
-                            print('merged box', (x, y, w, h), 'from', box, box2)
+                            # print('merged box', (x, y, w, h), 'from', box, box2)
                             merged_boxes.append((x, y, w, h))
                             used_boxes.append(box)
                             if (box in unused_boxes):
@@ -321,29 +319,104 @@ def main():
 
         # remove bounding boxes that are too small
         bounding_boxes = [b for b in bounding_boxes if b[2] > 10 and b[3] > 10]
-        for box in bounding_boxes:
-            print('after merge', box)
+        merged_boxes = merge_boxes(bounding_boxes)
+        # add merged boxes to img
 
 
 
 
         # draw bounding boxes on image in black
         for box in bounding_boxes:
-            cv2.rectangle(original_image, box, (0,0,0), 1)
-            cv2.rectangle(img, box, (0,0,0), 1)
+            # if box width is greater than height, and it is in the lower half of the image, and the area is less than 500
+            is_foot = False
+            x, y, w, h = box
+            if (i == 32):
+                print('box', box, 'area', w * h, 'x', x, 'y', y, 'w', w, 'h', h)
+            if w >= h and y > 20 and w * h < 500:
+                # draw bounding box in white
+                is_foot = True
+                cv2.rectangle(original_image, (x, y), (x + w, y + h), (0, 0, 0), 1)
+            else:
+                cv2.rectangle(original_image, box, (0,0,0), 1)
+
+            
+
+
+
+            
         # find the center of each bounding box
 
         # get the the center pixel value of each bounding box
+
+        time_step_array = []
         for box in bounding_boxes:
-            # get the center of the bounding box
             center = (box[0] + box[2]//2, box[1] + box[3]//2)
+            likely_color = "unknown"
             # get mean of pixel value around the center of the bounding box
             mean = np.mean(image[center[1]-5:center[1]+5, center[0]-5:center[0]+5])
-            print('pixel value', i ,mean)
+            # get mean rgb pixel value around the center of the bounding box
+            mean_rgb = np.mean(image[center[1]-5:center[1]+5, center[0]-5:center[0]+5], axis=(0,1))
+
+            if (mean_rgb[0] > 245 and mean_rgb[1] > 180):
+                likely_color = "blue" 
+            elif (mean_rgb[0] > 225 and mean_rgb[1] > 170):
+                likely_color = "green" 
+            elif (mean_rgb[0] > 245 and mean_rgb[1] < 100):
+                likely_color = "purple" 
+            if (mean_rgb[0] > 245 and mean_rgb[1] > 101):
+                likely_color = "turquoise"
+            
+
+            mean_grayscale_value = np.mean(img[center[1]-5:center[1]+5, center[0]-5:center[0]+5])
+            # print('pixel value', i ,mean)
             # if the pixel value is not black, draw a circle at the center of the bounding box
             if mean != 0:
                 cv2.circle(original_image, center, 1, (0,0,0), 1)
                 cv2.circle(img, center, 1, (0,0,0), 1)
+                # get avg pixel value around center of bounding box
+                bounding_box_x_center = center[0]
+                bounding_box_lowest_y_coordinate = box[1] + box[3]
+                print('bounding_box_x_center', bounding_box_x_center, 'bounding_box_lowest_y_coordinate', bounding_box_lowest_y_coordinate, 'box', box, 'shape', original_image.shape)
+                # get the pixel of original image of the variables above
+                pixel_below_bounding_box = original_image[bounding_box_lowest_y_coordinate, bounding_box_x_center]
+                angle_pixel_coordinate = (bounding_box_x_center, bounding_box_lowest_y_coordinate)
+
+
+            
+                # print('pixel_below_bounding_box', pixel_below_bounding_box)
+                # if (pixel_below_bounding_box[2] >= 200 and pixel_below_bounding_box[2] <= 225):
+                #     is_foot = True
+                #     angle_pixel_coordinate = (bounding_box_x_center, bounding_box_lowest_y_coordinate)
+                # else:
+                #     new_pixel = pixel_below_bounding_box
+                #     while (new_pixel[2] < 200 or new_pixel[2] > 225):
+                #         print('new_pixel', new_pixel)
+                #         bounding_box_lowest_y_coordinate += 1
+                #         new_pixel = image[bounding_box_lowest_y_coordinate, bounding_box_x_center]
+                #         if (new_pixel[2] >= 200 and new_pixel[2] <= 225):
+                #             angle_pixel_coordinate = (bounding_box_x_center, bounding_box_lowest_y_coordinate)
+                #             break
+                center_pixel_coordinates = (64,64)
+                # calculate angle between center pixel and angle pixel in degrees
+                angle = math.degrees(math.atan2(angle_pixel_coordinate[1] - center_pixel_coordinates[1], angle_pixel_coordinate[0] - center_pixel_coordinates[0]))
+            zombie_obj = {
+                "type": 'zombie',
+                "zombie_color_guess": likely_color,
+                "is_close": is_foot,
+                "angle": angle,
+                "pixel_color": mean,
+                "pixel_rgb_color": mean_rgb,
+
+            }
+            time_step_array.append(zombie_obj)
+
+
+
+
+            
+
+
+
 
 
 
@@ -359,9 +432,10 @@ def main():
 
 
         print(i)
+        pprint.pprint(time_step_array)
         cv2.imwrite(f"sample-{i}.png",original_image)
         cv2.waitKey(1)
-        if (i == 15):
+        if (i == 10):
             break
 
 
@@ -375,3 +449,23 @@ def main():
 
 
 main()
+
+
+# # blue
+# array([254.26416, 188.83891, 228.58   ]
+# array([254.19077, 188.83807, 229.17   ]
+
+
+
+
+# # green
+# pixel_rgb_color': array([234.21764, 186.3212 , 228.08   ]
+
+
+# # purple
+# array([263.30103,  94.82111, 202.84   ]
+# array([263.99597 ,  99.899506, 212.19    ]
+
+
+# # turquoise
+# array([261.23218, 107.54085, 196.27   ]
