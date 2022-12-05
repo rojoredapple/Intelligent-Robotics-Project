@@ -159,28 +159,19 @@ def main():
         # convert image to numpy array
             img_float32 = np.float32(image)
             time_step_array = []
-            # rotate image 90 degrees right and flip on y axis
             img_float32 = cv2.rotate(img_float32, cv2.ROTATE_90_CLOCKWISE)
             img_float32 = cv2.flip(img_float32, 1)
             image = cv2.cvtColor(img_float32, cv2.COLOR_RGB2HSV)
             original_image = cv2.cvtColor(img_float32, cv2.COLOR_RGB2HSV)
-            # print image size
-            print(image.shape)
-            # write image
-            # cv2.imwrite(f"image-{i}.png", original_image)
-            # remove red background
             for row in range(image.shape[0]):
                 count = 0
                 for col in range(image.shape[1]):
-                    # if pixel is in range of red color
+                    # removing red floor from image
                     if image[row][col][2] >= 200 and image[row][col][2] <= 230:
                         image[row][col] = [255,255,255]
-                    # if not front:
-                    #     continue
-
                     if (col == 126):
                         break
-                    # get rgb difference between current pixel and next pixel
+                    # get rgb difference between current pixel and next pixel, if difference is less than 10% add to count for potential removal
                     r1 = image[row][col][2]
                     r2 = image[row][col+1][2]
                     g1 = image[row][col][1]
@@ -189,12 +180,6 @@ def main():
                     b2 = image[row][col+1][0]
                     diff = abs(r1-r2) + abs(g1-g2) + abs(b1-b2)
                     percentage_diff = diff / 765 * 100
-                    # print(percentage_diff, 'percentage diff')
-                    
-                    # if difference is less than 10% add to count
-                    # print(percentage_diff, count, 'diff', row, col)
-                    # if not front:
-                    #     continue
                     if percentage_diff < 5:
                         count += 1
                     else:
@@ -207,67 +192,22 @@ def main():
                                 image[row][col-10:col] = [255,255,255]
                         except Exception as e:
                             pass
-            # do the same process as above but for columsn
-            # for col in range(image.shape[1]):
-            #     count = 0
-            #     for row in range(image.shape[0]):
-            #         if (row == 63):
-            #             break
-            #         r1 = image[row][col][2]
-            #         r2 = image[row+1][col][2]
-            #         g1 = image[row][col][1]
-            #         g2 = image[row+1][col][1]
-            #         b1 = image[row][col][0]
-            #         b2 = image[row+1][col][0]
-            #         diff = abs(r1-r2) + abs(g1-g2) + abs(b1-b2)
-            #         percentage_diff = diff / 765 * 100
-            #         print(percentage_diff, count, 'diff', row, col)
-            #         if diff < 5:
-            #             count += 1
-            #         else:
-            #             count = 0
-            #         if count >= 20:
-            #             try:
-            #                 print('removed pixels between', row-10, row, col)
-            #                 # error -IndexError: index 9 is out of bounds for axis 0 with size 9
-            #                 # if (row-10 < 0):
-            #                 #     image[0:row][col] = [255,255,255]
-            #                 #     count = 0
-            #                 # else:
-            #                 #     image[row-10:row][col] = [255,255,255]
-            #                 #     count = 0
-            #             except Exception as e:
-            #                 print(e)
-            #                 pass
 
 
- 
-                   
-   
-            
-                
-            
-
-                
-            # lower_red = np.array([0, 0, 0])
-            # upper_red = np.array([255, 255, 160])
-            # mask = cv2.inRange(image, lower_red, upper_red)
-            # image[mask > 0] = (255,255,255)
             image[0] = (255,255,255)
             image[-1] = (255,255,255)
             image[:,0] = (255,255,255)
             image[:,-1] = (255,255,255)
-            # cv2.imwrite(f"filtered-{i}.png", image)
+
             img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             img = img.astype(np.uint8)
-            # lowpass = cv2.GaussianBlur(img, (7, 7), 0)
+
             thresh = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,5,10)
             # remove last column
             thresh = thresh[:, :-1]
             thresh = thresh[:, :-1]
 
-            # cv2.imwrite(f"thresh-{i}.png", thresh)
-            # if most of thresh is white, then return true
+            # if most of thresh is white, then it is a wall
             white_pixels = 0
             for row in range(thresh.shape[0]):
                 for col in range(thresh.shape[1]):
@@ -287,8 +227,8 @@ def main():
             # remove bounding boxes whose area is less than 50
             bounding_boxes = [b for b in bounding_boxes if b[3] * b[2] > 50]
             # bounding_boxes = [b for b in bounding_boxes if b[2] >  and b[3] > 10]
-            unused_boxes = bounding_boxes.copy()
-            used_boxes = []
+
+            # remove bounding boxes inside of each other
             def remove_box_inside(boxes):
                 for idx, box in enumerate(boxes):
                     x, y, w, h = box
@@ -298,9 +238,9 @@ def main():
                             if x2 < x + w and x2 + w2 > x and y2 < y + h and y2 + h2 > y:
                                 boxes.remove(box2)
                 return boxes
-            # bounding_boxes = merge_boxes(bounding_boxes)
+
             bounding_boxes = remove_box_inside(bounding_boxes)
-            # draw bounding boxes on image in black
+
 
             # remove any bounding box with area greater than 100 * 50
             bounding_boxes = [b for b in bounding_boxes if b[3] * b[2] < 50 * 50]
